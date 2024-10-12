@@ -1,21 +1,35 @@
-"use client"
+"use client";
 
 import LogoutButton from "@/components/Logout";
-import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const {data}= useSession();
+  const [loading, setLoading] = useState(true);
 
-  const userData = data ? JSON.parse(JSON.stringify(data)) : null;
+  useEffect(() => {
+    const login = sessionStorage.getItem("login");
+    if (!login) {
+      window.location.href = "/login";
+    }
+    setLoading(false);
+  }, []);
 
   return (
     <div>
-      {userData && <LogoutButton />}
-      {children}
+      {loading ? (
+        <div className="flex justify-center items-center h-screen">
+          <div className="radial-progress animate-spin text-primary"></div>
+        </div>
+      ) : (
+        <>
+          <LogoutButton />
+          {children}
+        </>
+      )}
     </div>
   );
 }

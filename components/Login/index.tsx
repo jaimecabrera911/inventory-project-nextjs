@@ -1,30 +1,26 @@
 "use client";
 
+import { login } from "@/services/login.service";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { signIn } from "next-auth/react";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
-  const notifyError = () => toast.error("Error al iniciar sesión");
-  const notifySuccess = () => toast.success("Inicio de sesión exitoso");
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const result = await signIn("credentials", {
-      redirect: false,
-      username,
-      password,
-    });
-    if (result?.error) {
-      notifyError();
-    }
-    notifySuccess();
-    router.push("/products/upload");
+    login(username, password)
+      .then(() => {
+        console.log('login successful')
+        sessionStorage.setItem('login', username);
+        toast.success("Iniciando sesión");
+        router.push("/products/upload");
+      })
+      .catch(() => toast.error("Error al iniciar sesión"));
   };
 
   return (
