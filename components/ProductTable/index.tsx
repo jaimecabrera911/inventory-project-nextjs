@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 const ProductTable = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [colors, setColors] = useState<string[]>([]);
+  const [calibres, setCalibres] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +24,11 @@ const ProductTable = () => {
       const uniqueColors = Array.from(
         new Set(response.map((product) => product.color))
       );
+      const uniqueCalibres = Array.from(
+        new Set(response.map((product) => product.calibre))
+      )
       setColors(uniqueColors);
+      setCalibres(uniqueCalibres);
       setIsLoading(false);
     };
     fetchData();
@@ -50,6 +55,8 @@ const ProductTable = () => {
         accessorKey: "calibre", // Acceder al precio
         header: "Calibre",
         size: 100,
+        filterVariant: "multi-select",
+        filterSelectOptions: calibres,
         //Cell: ({ cell }) => `$${cell.getValue<number>().toFixed(2)}`, // Mostrar precio en formato de moneda
       },
       {
@@ -61,7 +68,7 @@ const ProductTable = () => {
       {
         accessorKey: "color", // Acceder al stock
         header: "Color",
-        filterVariant: "select",
+        filterVariant: "multi-select",
         filterSelectOptions: colors,
         size: 50,
       },
@@ -148,7 +155,7 @@ const ProductTable = () => {
   });
 
   return (
-    <div className="p-5">
+    <div>
       <MaterialReactTable table={table} />
     </div>
   );
