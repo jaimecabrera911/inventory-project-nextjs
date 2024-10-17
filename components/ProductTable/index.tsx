@@ -85,6 +85,9 @@ const ProductTable = () => {
         enableColumnFilter: false, // Ocultar filtro
         Cell: ({ cell }) => {
           const date = new Date(cell.getValue<Date>());
+          if (date.toLocaleDateString() === "31/12/1969") {
+            return null;
+          }
           return date.toLocaleDateString(); // Format the date as you prefer
         },
       },

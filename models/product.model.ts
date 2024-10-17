@@ -6,6 +6,6 @@ export interface Product {
   pesoKg: number;
   importador: string;
   observaciones: string;
-  fechaIngreso: Date;
+  fechaIngreso: Date | null | string;
   estado: string;
 };

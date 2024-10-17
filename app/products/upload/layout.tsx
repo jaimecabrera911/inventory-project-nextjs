@@ -25,10 +25,10 @@ export default function RootLayout({
           <div className="radial-progress animate-spin text-primary"></div>
         </div>
       ) : (
-        <>
+        <div className="p-5 md:p-10 lg:p-20">
           <LogoutButton />
           {children}
-        </>
+        </div>
       )}
     </div>
   );

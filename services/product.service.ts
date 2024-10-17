@@ -11,6 +11,8 @@ export const getProducts = async () => {
 
 export const uploadProducts = async (products: Product[]) => {
   const prismaClient = new PrismaClient();
+
+  await prismaClient.producto.deleteMany({});
   await prismaClient.producto.createMany({
     data: products,
   });
