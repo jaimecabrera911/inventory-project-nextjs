@@ -27,7 +27,7 @@ const UploadFile = () => {
           {
             columns: true,
             trim: true,
-            delimiter: ",", // Especifica el delimitador aquí
+            delimiter: ";", // Especifica el delimitador aquí
             cast: (value) => {
               return value === "null" ? null : value;
             },
@@ -66,7 +66,7 @@ const UploadFile = () => {
       return product;
     });
     console.log("Datos guardados:", formatProducts);
-    
+
 
     uploadProducts(formatProducts)
       .then(() => {
