@@ -89,6 +89,7 @@ const UploadFile = () => {
     <div>
       <h1 className="text-2xl font-bold">Subir Archivo de Productos</h1>
       <input
+        title="Subir Archivos"
         type="file"
         className="file-input w-full max-w-xs mt-10"
         onChange={handleFileChange}

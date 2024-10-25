@@ -5,6 +5,7 @@ import { getProducts } from "@/services/product.service";
 import {
   MaterialReactTable,
   MRT_ColumnDef,
+  MRT_RowSelectionState,
   useMaterialReactTable,
 } from "material-react-table";
 import { useEffect, useMemo, useState } from "react";
@@ -14,11 +15,26 @@ const ProductTable = () => {
   const [colors, setColors] = useState<string[]>([]);
   const [calibres, setCalibres] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
+  const [weight, setWeight] = useState(0)
+
+  useMemo(() => {
+    if (products.length > 0) {
+      const ids = Object.keys(rowSelection).map(Number);
+      const totalWeight = ids.reduce((acc, id) => {
+        console.log(products[id].pesoKg);
+        return acc + products[id].pesoKg;
+      }, 0);
+
+      setWeight(parseFloat(totalWeight.toFixed(4)));
+      console.log(totalWeight);
+    }
+  }, [products, rowSelection]);
+
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      // Simular una llamada a la API para obtener los productos
       const response = await getProducts();
       setProducts(response);
       const uniqueColors = Array.from(
@@ -26,13 +42,15 @@ const ProductTable = () => {
       );
       const uniqueCalibres = Array.from(
         new Set(response.map((product) => product.calibre))
-      )
+      );
       setColors(uniqueColors);
       setCalibres(uniqueCalibres);
       setIsLoading(false);
     };
+
     fetchData();
   }, []);
+
 
   const getState = (state: string) => {
     if (state == "activo") {
@@ -112,8 +130,13 @@ const ProductTable = () => {
         Cell: ({ cell }) => getState(cell.getValue<string>()),
       },
     ],
-    [colors]
+    [calibres, colors]
   );
+
+  const handleRowSelectionChange = (updater: ((selection: typeof rowSelection) => typeof rowSelection) | typeof rowSelection) => {
+    const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
+    setRowSelection(newSelection);
+  };
 
   const table = useMaterialReactTable({
     columns,
@@ -123,10 +146,13 @@ const ProductTable = () => {
     }, // Mostrar filtros por defecto
     data: products, // Los datos deben ser memorizados o estables
     enableRowSelection: true,
+    onRowSelectionChange: handleRowSelectionChange,
+
     state: {
       isLoading: isLoading, //cell skeletons and loading overlay
       showProgressBars: isLoading, //progress bars while refetching
       isSaving: isLoading, //progress bars and save button spinners
+      rowSelection
     },
     muiTableHeadCellProps: {
       sx: {
@@ -159,6 +185,7 @@ const ProductTable = () => {
 
   return (
     <div>
+      <h3>Peso de rollos seleccionados: {weight}</h3>
       <MaterialReactTable table={table} />
     </div>
   );
