@@ -179,13 +179,12 @@ const ProductTable = () => {
       toggleFullScreen: "Cambiar pantalla completa",
       rowsPerPage: "Filas por página",
       clearSelection: "Limpiar selección",
-      selectedCountOfRowCountRowsSelected: "{selectedCount} de {rowCount} filas seleccionadas",
+      selectedCountOfRowCountRowsSelected: `{selectedCount} de {rowCount} filas seleccionadas -  peso: ${weight} kg`,
     },
   });
 
   return (
     <div>
-      <h3>Peso de rollos seleccionados: {weight}</h3>
       <MaterialReactTable table={table} />
     </div>
   );
