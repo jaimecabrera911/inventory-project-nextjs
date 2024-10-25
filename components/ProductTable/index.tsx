@@ -37,12 +37,19 @@ const ProductTable = () => {
       setIsLoading(true);
       const response = await getProducts();
       setProducts(response);
-      const uniqueColors = Array.from(
-        new Set(response.map((product) => product.color))
-      );
-      const uniqueCalibres = Array.from(
-        new Set(response.map((product) => product.calibre))
-      );
+
+      const sortedColors = response
+        .map((product) => product.color)
+        .sort((a, b) => a.localeCompare(b));
+
+      const uniqueColors = Array.from(new Set(sortedColors));
+
+      const sortedCalibres = response
+        .map((product) => product.calibre)
+        .sort((a, b) => a.localeCompare(b));
+
+      const uniqueCalibres = Array.from(new Set(sortedCalibres));
+
       setColors(uniqueColors);
       setCalibres(uniqueCalibres);
       setIsLoading(false);
