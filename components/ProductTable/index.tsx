@@ -178,7 +178,7 @@ const ProductTable = () => {
     localization: {
       clearSort: "Limpiar orden",
       clearFilter: "Limpiar filtro",
-      filterByColumn: "Filtrar por {column}",
+      filterByColumn: "Filtro",
       sortByColumnDesc: "Ordenar por {column} descendente",
       sortByColumnAsc: "Ordenar por {column} ascendente",
       hideColumn: "Ocultar columna {column}",
