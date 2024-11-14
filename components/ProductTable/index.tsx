@@ -60,11 +60,13 @@ const ProductTable = () => {
 
 
   const getState = (state: string) => {
-    if (state == "activo") {
-      return <div className="badge badge-success">Activo</div>;
-    } else if (state == "sin existencias") {
-      return <div className="badge badge-error">Sin Existencias</div>;
-    }
+    const stateMap: { [key: string]: JSX.Element } = {
+      activo: <div className="badge badge-success">Activo</div>,
+      destapado: <div className="badge badge-warning">Destapado</div>,
+      "sin existencias": <div className="badge badge-error">Sin Existencias</div>,
+    };
+
+    return stateMap[state] || null;
   };
 
   // Definir las columnas para la tabla de productos
@@ -132,7 +134,7 @@ const ProductTable = () => {
         accessorKey: "estado", // Acceder a la disponibilidad
         header: "Estado",
         filterVariant: "select",
-        filterSelectOptions: ["activo", "sin existencias"],
+        filterSelectOptions: ["activo", "sin existencias", "destapado"],
         size: 150,
         Cell: ({ cell }) => getState(cell.getValue<string>()),
       },
