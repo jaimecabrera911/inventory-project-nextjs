@@ -133,7 +133,7 @@ const ProductTable = () => {
       {
         accessorKey: "estado", // Acceder a la disponibilidad
         header: "Estado",
-        filterVariant: "select",
+        filterVariant: "multi-select",
         filterSelectOptions: ["activo", "sin existencias", "destapado"],
         size: 150,
         Cell: ({ cell }) => getState(cell.getValue<string>()),
@@ -150,7 +150,13 @@ const ProductTable = () => {
   const table = useMaterialReactTable({
     columns,
     initialState: {
-      showColumnFilters: true
+      showColumnFilters: true,
+      columnFilters: [
+        {
+          id: 'estado', // El id de la columna que deseas filtrar
+          value: ['activo', 'destapado'], // Valores predeterminados para el filtro
+        },
+      ],
     }, // Mostrar filtros por defecto
     data: products, // Los datos deben ser memorizados o estables
     enableRowSelection: true,
