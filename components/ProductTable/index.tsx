@@ -150,8 +150,7 @@ const ProductTable = () => {
   const table = useMaterialReactTable({
     columns,
     initialState: {
-      showColumnFilters: true,
-      columnFilters: [{ id: "estado", value: "activo" }],
+      showColumnFilters: true
     }, // Mostrar filtros por defecto
     data: products, // Los datos deben ser memorizados o estables
     enableRowSelection: true,
