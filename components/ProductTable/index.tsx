@@ -154,7 +154,7 @@ const ProductTable = () => {
       columnFilters: [
         {
           id: 'estado', // El id de la columna que deseas filtrar
-          value: ['activo', 'destapado'], // Valores predeterminados para el filtro
+          value: ['activo'], // Valores predeterminados para el filtro
         },
       ],
     }, // Mostrar filtros por defecto
