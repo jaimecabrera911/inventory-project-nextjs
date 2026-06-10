@@ -26,6 +26,44 @@ export const login = async (username: string, password: string) => {
     throw new Error("Contraseña incorrecta");
   }
 
-  // Aquí puedes devolver el usuario o cualquier información que necesites
   return user;
+};
+
+export const changePassword = async (
+  username: string,
+  currentPassword: string,
+  newPassword: string
+) => {
+  const prismaClient = new PrismaClient();
+
+  if (!username || !currentPassword || !newPassword) {
+    throw new Error("Todos los campos son obligatorios");
+  }
+
+  if (newPassword.length < 6) {
+    throw new Error("La nueva contraseña debe tener al menos 6 caracteres");
+  }
+
+  if (currentPassword === newPassword) {
+    throw new Error("La nueva contraseña debe ser diferente a la actual");
+  }
+
+  const user = await prismaClient.usuario.findUnique({
+    where: { username },
+  });
+
+  if (!user) {
+    throw new Error("Usuario no encontrado");
+  }
+
+  if (currentPassword !== user.password) {
+    throw new Error("La contraseña actual no es correcta");
+  }
+
+  await prismaClient.usuario.update({
+    where: { username },
+    data: { password: newPassword },
+  });
+
+  return { success: true };
 };

@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { classNames } from "primereact/utils";
 
 const navItems = [
-  { href: "/products/upload", label: "Carga CSV", icon: "pi-upload" },
+  { href: "/products/upload", label: "Importar inventario", icon: "pi-upload" },
+  { href: "/products/settings", label: "Cuenta", icon: "pi-user-edit" },
 ];
 
 export function OperatorShell({ children }: { children: React.ReactNode }) {

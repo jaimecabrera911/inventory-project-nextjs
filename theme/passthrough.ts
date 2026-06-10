@@ -31,8 +31,24 @@ export const primePT = {
     root: { className: inputBase },
   },
   password: {
-    root: { className: "relative w-full" },
-    input: { className: inputBase },
+    root: { className: "relative block w-full" },
+    iconField: {
+      root: { className: "relative block w-full" },
+    },
+    inputIcon: {
+      root: {
+        className: "pointer-events-none absolute inset-y-0 right-0 flex items-center pr-1.5",
+      },
+    },
+    input: { className: `${inputBase} pr-8` },
+    showIcon: {
+      className:
+        "pointer-events-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm text-steel-500 transition-colors hover:text-steel-700 [&_svg]:h-3.5 [&_svg]:w-3.5",
+    },
+    hideIcon: {
+      className:
+        "pointer-events-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm text-steel-500 transition-colors hover:text-steel-700 [&_svg]:h-3.5 [&_svg]:w-3.5",
+    },
     panel: { className: "mt-1 rounded-sm border border-steel-200 bg-white p-2 text-xs shadow-lg" },
   },
   datatable: {

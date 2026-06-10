@@ -2,6 +2,7 @@
 
 import { useAppToast } from "@/components/providers/ToastProvider";
 import { login } from "@/services/login.service";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "primereact/button";
@@ -45,6 +46,20 @@ const Login = () => {
     <div className="grain flex min-h-screen items-center justify-center bg-steel-100 px-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
+          <Link
+            href="/products"
+            className="mx-auto mb-6 inline-block transition-opacity hover:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500"
+            aria-label="Todo Hierros — Volver al inventario"
+          >
+            <Image
+              src="/logo.png"
+              alt="Todo Hierros"
+              width={220}
+              height={56}
+              className="mx-auto h-10 w-auto object-contain sm:h-11"
+              priority
+            />
+          </Link>
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent-600">
             Área operador
           </p>

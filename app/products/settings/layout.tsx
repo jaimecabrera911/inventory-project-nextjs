@@ -1,6 +1,6 @@
 import { OperatorAuthGate } from "@/components/layout/OperatorAuthGate";
 
-export default function UploadLayout({
+export default function SettingsLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
