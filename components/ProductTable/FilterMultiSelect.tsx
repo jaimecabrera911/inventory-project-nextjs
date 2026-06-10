@@ -53,7 +53,7 @@ function buildSelectPt(hasValue: boolean): MultiSelectPassThroughOptions {
     closeIcon: { className: "hidden" },
     wrapper: { className: "max-h-56 overflow-y-auto" },
     list: { className: "m-0 list-none p-1.5" },
-    item: ({ context }) => ({
+    item: ({ context }: { context?: { selected?: boolean } }) => ({
       className: classNames(
         "flex cursor-pointer items-center gap-2.5 rounded-sm px-2.5 py-2 text-sm transition-colors",
         context?.selected
