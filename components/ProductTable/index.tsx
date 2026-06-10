@@ -7,6 +7,11 @@ import { Column } from "primereact/column";
 import { DataTable, DataTableFilterMeta } from "primereact/datatable";
 import { Tag } from "primereact/tag";
 import { useEffect, useMemo, useState } from "react";
+import {
+  getCalibreOptions,
+  getColorOptions,
+  sanitizeFilters,
+} from "./filterUtils";
 import { InventoryTableSkeleton } from "./InventoryTableSkeleton";
 import { InventoryToolbar } from "./InventoryToolbar";
 import { inventoryPaginatorTemplate } from "./PaginationReport";
@@ -61,14 +66,15 @@ const ProductTable = () => {
   }, [hasMounted]);
 
   const calibreOptions = useMemo(
-    () => Array.from(new Set(products.map((p) => p.calibre))).sort((a, b) => a.localeCompare(b)),
-    [products]
+    () => getCalibreOptions(products, filters),
+    [products, filters]
   );
 
-  const colorOptions = useMemo(
-    () => Array.from(new Set(products.map((p) => p.color))).sort((a, b) => a.localeCompare(b)),
-    [products]
-  );
+  const colorOptions = useMemo(() => getColorOptions(products, filters), [products, filters]);
+
+  const handleFiltersChange = (next: DataTableFilterMeta) => {
+    setFilters((prev) => sanitizeFilters(products, { ...prev, ...next }));
+  };
 
   const totalWeight = useMemo(
     () =>
@@ -80,10 +86,12 @@ const ProductTable = () => {
 
   const handleGlobalFilterChange = (value: string) => {
     setGlobalFilter(value);
-    setFilters((prev) => ({
-      ...prev,
-      global: { value, matchMode: FilterMatchMode.CONTAINS },
-    }));
+    setFilters((prev) =>
+      sanitizeFilters(products, {
+        ...prev,
+        global: { value, matchMode: FilterMatchMode.CONTAINS },
+      })
+    );
   };
 
   const clearFilters = () => {
@@ -140,7 +148,7 @@ const ProductTable = () => {
         selectedCount={selectedProducts.length}
         totalWeightKg={totalWeight}
         onGlobalFilterChange={handleGlobalFilterChange}
-        onFiltersChange={setFilters}
+        onFiltersChange={handleFiltersChange}
         onClearFilters={clearFilters}
         onClearSelection={() => setSelectedProducts([])}
       />
@@ -158,7 +166,6 @@ const ProductTable = () => {
           selection={selectedProducts}
           onSelectionChange={(e) => setSelectedProducts(e.value)}
           filters={filters}
-          onFilter={(e) => setFilters(e.filters)}
           globalFilterFields={["rollo", "calibre", "ral", "color", "importador", "observaciones"]}
           emptyMessage="No hay rollos que coincidan con los filtros."
           stripedRows

@@ -96,6 +96,7 @@ export function InventoryToolbar({
 
         <FilterField label="Calibre">
           <FilterMultiSelect
+            key={`calibre-${estadoFilter?.join(",") ?? "all"}-${calibreOptions.length}`}
             value={calibreFilter}
             options={calibreOptions}
             onChange={(v) => updateFilter("calibre", v)}
@@ -107,6 +108,7 @@ export function InventoryToolbar({
 
         <FilterField label="Color">
           <FilterMultiSelect
+            key={`color-${estadoFilter?.join(",") ?? "all"}-${calibreFilter?.join(",") ?? "all"}-${colorOptions.length}`}
             value={colorFilter}
             options={colorOptions}
             onChange={(v) => updateFilter("color", v)}
