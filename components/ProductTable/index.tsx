@@ -5,9 +5,9 @@ import { getProducts } from "@/services/product.service";
 import { FilterMatchMode } from "primereact/api";
 import { Column } from "primereact/column";
 import { DataTable, DataTableFilterMeta } from "primereact/datatable";
-import { ProgressSpinner } from "primereact/progressspinner";
 import { Tag } from "primereact/tag";
 import { useEffect, useMemo, useState } from "react";
+import { InventoryTableSkeleton } from "./InventoryTableSkeleton";
 import { InventoryToolbar } from "./InventoryToolbar";
 import { inventoryPaginatorTemplate } from "./PaginationReport";
 import { WeightCalculatorBar } from "./WeightCalculatorBar";
@@ -30,14 +30,35 @@ const ProductTable = () => {
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [hasMounted, setHasMounted] = useState(false);
   const [filters, setFilters] = useState<DataTableFilterMeta>(DEFAULT_FILTERS);
 
   useEffect(() => {
-    getProducts().then((response) => {
-      setProducts(response);
-      setIsLoading(false);
-    });
+    setHasMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!hasMounted) return;
+
+    let active = true;
+
+    getProducts()
+      .then((response) => {
+        if (!active) return;
+        setProducts(response);
+      })
+      .catch(() => {
+        if (!active) return;
+        setProducts([]);
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [hasMounted]);
 
   const calibreOptions = useMemo(
     () => Array.from(new Set(products.map((p) => p.calibre))).sort((a, b) => a.localeCompare(b)),
@@ -104,12 +125,8 @@ const ProductTable = () => {
     <span className="inline-flex items-center gap-1.5">{label}</span>
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[320px] items-center justify-center rounded-sm border border-steel-200 bg-white">
-        <ProgressSpinner />
-      </div>
-    );
+  if (!hasMounted || isLoading) {
+    return <InventoryTableSkeleton />;
   }
 
   return (
