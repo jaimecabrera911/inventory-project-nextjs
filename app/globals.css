@@ -1,3 +1,124 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --background: #f4f5f6;
+  --foreground: #1a1d21;
+  --steel-50: #f8f9fa;
+  --steel-100: #eceef0;
+  --steel-200: #d8dce0;
+  --steel-300: #b8bfc6;
+  --steel-400: #8a939c;
+  --steel-500: #5c6670;
+  --steel-600: #3d4550;
+  --steel-700: #2a3038;
+  --steel-800: #1a1d21;
+  --steel-900: #0f1114;
+  --accent-50: #eef1fb;
+  --accent-100: #dce3f7;
+  --accent-200: #b8c5ed;
+  --accent-300: #8498dc;
+  --accent-400: #506bc4;
+  --accent-500: #2f4dad;
+  --accent-600: #1e3799;
+  --accent-700: #172b77;
+  --accent-800: #112059;
+  --accent-900: #0b1640;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+}
+
+.font-mono-tech {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+@layer utilities {
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+}
+
+/* PrimeReact — inventario */
+@layer components {
+  .inventory-shell .inventory-scroll {
+    overflow-x: auto;
+  }
+
+  .inventory-shell .inventory-grid {
+    width: 100%;
+    min-width: 72rem;
+    border-collapse: collapse;
+    table-layout: auto;
+  }
+
+  .inventory-shell .inventory-grid thead th,
+  .inventory-shell .inventory-grid tbody td {
+    vertical-align: middle;
+  }
+
+  /* Evita doble checkbox: input nativo invisible, solo la caja custom */
+  .inventory-shell input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .inventory-shell .inventory-paginator {
+    row-gap: 0.5rem;
+  }
+
+  .inventory-shell .inventory-paginator button:disabled {
+    opacity: 1;
+  }
+
+  /* Página activa — visible aunque falle el pt de PrimeReact */
+  .inventory-shell .inventory-paginator button[aria-current="true"],
+  .inventory-shell .inventory-paginator .inventory-pag-page--active {
+    background-color: var(--accent-600);
+    border-color: var(--accent-600);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .inventory-shell .inventory-paginator .inventory-pag-page {
+    position: relative;
+    z-index: 0;
+  }
+
+  .inventory-shell .inventory-paginator .inventory-pag-current-page {
+    font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+    font-weight: 700;
+    color: var(--accent-600);
+  }
+
+  .inventory-shell .inventory-rpp svg {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+
+  /* MultiSelect — barra de acciones compacta (limpiar + chevron) */
+  .inventory-ms-root {
+    cursor: pointer;
+  }
+
+  .inventory-ms-root:focus-within {
+    border-color: var(--accent-500);
+    box-shadow: 0 0 0 1px var(--accent-500);
+  }
+
+  .inventory-ms-root:focus-within.shadow-\[inset_3px_0_0_0_var\(--accent-500\)\] {
+    box-shadow:
+      inset 3px 0 0 0 var(--accent-500),
+      0 0 0 1px var(--accent-500);
+  }
+
+  .inventory-ms-root svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+  }
+}

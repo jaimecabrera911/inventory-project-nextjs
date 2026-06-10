@@ -1,4 +1,5 @@
 export interface Product {
+  id?: number;
   rollo: string;
   calibre: string;
   ral: string;
@@ -8,4 +9,4 @@ export interface Product {
   observaciones: string;
   fechaIngreso: Date | null | string;
   estado: string;
-};
+}

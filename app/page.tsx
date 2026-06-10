@@ -1,10 +1,5 @@
-"use client";
-
-import ProductPage from "./products/page";
+import { redirect } from "next/navigation";
 
 export default function Home() {
- 
-  return (
-    <ProductPage/>
-  );
+  redirect("/products");
 }

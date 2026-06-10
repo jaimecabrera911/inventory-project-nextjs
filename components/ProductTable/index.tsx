@@ -2,205 +2,227 @@
 
 import { Product } from "@/models/product.model";
 import { getProducts } from "@/services/product.service";
-import {
-  MaterialReactTable,
-  MRT_ColumnDef,
-  MRT_RowSelectionState,
-  useMaterialReactTable,
-} from "material-react-table";
+import { FilterMatchMode } from "primereact/api";
+import { Column } from "primereact/column";
+import { DataTable, DataTableFilterMeta } from "primereact/datatable";
+import { ProgressSpinner } from "primereact/progressspinner";
+import { Tag } from "primereact/tag";
 import { useEffect, useMemo, useState } from "react";
+import { InventoryToolbar } from "./InventoryToolbar";
+import { inventoryPaginatorTemplate } from "./PaginationReport";
+import { WeightCalculatorBar } from "./WeightCalculatorBar";
+
+const estadoSeverity: Record<string, "success" | "warning" | "danger" | "secondary"> = {
+  activo: "success",
+  destapado: "warning",
+  "sin existencias": "danger",
+};
+
+const DEFAULT_FILTERS: DataTableFilterMeta = {
+  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  estado: { value: ["activo"], matchMode: FilterMatchMode.IN },
+  calibre: { value: null, matchMode: FilterMatchMode.IN },
+  color: { value: null, matchMode: FilterMatchMode.IN },
+};
 
 const ProductTable = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [colors, setColors] = useState<string[]>([]);
-  const [calibres, setCalibres] = useState<string[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [rowSelection, setRowSelection] = useState<MRT_RowSelectionState>({});
-  const [weight, setWeight] = useState(0)
-
-  useMemo(() => {
-    if (products.length > 0) {
-      const ids = Object.keys(rowSelection).map(Number);
-      const totalWeight = ids.reduce((acc, id) => {
-        console.log(products[id].pesoKg);
-        return acc + products[id].pesoKg;
-      }, 0);
-
-      setWeight(parseFloat(totalWeight.toFixed(4)));
-      console.log(totalWeight);
-    }
-  }, [products, rowSelection]);
-
+  const [filters, setFilters] = useState<DataTableFilterMeta>(DEFAULT_FILTERS);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      const response = await getProducts();
+    getProducts().then((response) => {
       setProducts(response);
-
-      const sortedColors = response
-        .map((product) => product.color)
-        .sort((a, b) => a.localeCompare(b));
-
-      const uniqueColors = Array.from(new Set(sortedColors));
-
-      const sortedCalibres = response
-        .map((product) => product.calibre)
-        .sort((a, b) => a.localeCompare(b));
-
-      const uniqueCalibres = Array.from(new Set(sortedCalibres));
-
-      setColors(uniqueColors);
-      setCalibres(uniqueCalibres);
       setIsLoading(false);
-    };
-
-    fetchData();
+    });
   }, []);
 
-
-  const getState = (state: string) => {
-    const stateMap: { [key: string]: JSX.Element } = {
-      activo: <div className="badge badge-success">Activo</div>,
-      destapado: <div className="badge badge-warning">Destapado</div>,
-      "sin existencias": <div className="badge badge-error">Sin Existencias</div>,
-    };
-
-    return stateMap[state] || null;
-  };
-
-  // Definir las columnas para la tabla de productos
-  const columns = useMemo<MRT_ColumnDef<Product>[]>(
-    () => [
-      {
-        accessorKey: "rollo", // Acceder al nombre del producto
-        header: "Rollo",
-        size: 100,
-        enableColumnFilter: false, // Ocultar filtro
-      },
-      {
-        accessorKey: "calibre", // Acceder al precio
-        header: "Calibre",
-        size: 100,
-        filterVariant: "multi-select",
-        filterSelectOptions: calibres,
-        //Cell: ({ cell }) => `$${cell.getValue<number>().toFixed(2)}`, // Mostrar precio en formato de moneda
-      },
-      {
-        accessorKey: "ral", // Acceder al stock
-        header: "RAL",
-        enableColumnFilter: false, // Ocultar filtro
-        size: 100,
-      },
-      {
-        accessorKey: "color", // Acceder al stock
-        header: "Color",
-        filterVariant: "multi-select",
-        filterSelectOptions: colors,
-        size: 50,
-      },
-      {
-        accessorKey: "pesoKg", // Acceder al stock
-        header: "Peso Kg",
-        size: 100,
-        enableColumnFilter: false, // Ocultar filtro
-      },
-      {
-        accessorKey: "fechaIngreso", // Acceder al stock
-        header: "Fecha Ingreso",
-        size: 50,
-        enableColumnFilter: false, // Ocultar filtro
-        Cell: ({ cell }) => {
-          const date = new Date(cell.getValue<Date>());
-          if (date.toLocaleDateString() === "31/12/1969") {
-            return null;
-          }
-          return date.toLocaleDateString(); // Format the date as you prefer
-        },
-      },
-      {
-        accessorKey: "importador", // Acceder al stock
-        header: "Importador",
-        size: 100,
-        enableColumnFilter: false, // Ocultar filtro
-      },
-      {
-        accessorKey: "observaciones", // Acceder al stock
-        header: "Observaciones",
-        size: 100,
-        enableColumnFilter: false, // Ocultar filtro
-      },
-      {
-        accessorKey: "estado", // Acceder a la disponibilidad
-        header: "Estado",
-        filterVariant: "multi-select",
-        filterSelectOptions: ["activo", "sin existencias", "destapado"],
-        size: 150,
-        Cell: ({ cell }) => getState(cell.getValue<string>()),
-      },
-    ],
-    [calibres, colors]
+  const calibreOptions = useMemo(
+    () => Array.from(new Set(products.map((p) => p.calibre))).sort((a, b) => a.localeCompare(b)),
+    [products]
   );
 
-  const handleRowSelectionChange = (updater: ((selection: typeof rowSelection) => typeof rowSelection) | typeof rowSelection) => {
-    const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
-    setRowSelection(newSelection);
+  const colorOptions = useMemo(
+    () => Array.from(new Set(products.map((p) => p.color))).sort((a, b) => a.localeCompare(b)),
+    [products]
+  );
+
+  const totalWeight = useMemo(
+    () =>
+      parseFloat(
+        selectedProducts.reduce((acc, p) => acc + (p.pesoKg ?? 0), 0).toFixed(4)
+      ),
+    [selectedProducts]
+  );
+
+  const handleGlobalFilterChange = (value: string) => {
+    setGlobalFilter(value);
+    setFilters((prev) => ({
+      ...prev,
+      global: { value, matchMode: FilterMatchMode.CONTAINS },
+    }));
   };
 
-  const table = useMaterialReactTable({
-    columns,
-    initialState: {
-      showColumnFilters: true,
-      columnFilters: [
-        {
-          id: 'estado', // El id de la columna que deseas filtrar
-          value: ['activo'], // Valores predeterminados para el filtro
-        },
-      ],
-    }, // Mostrar filtros por defecto
-    data: products, // Los datos deben ser memorizados o estables
-    enableRowSelection: true,
-    onRowSelectionChange: handleRowSelectionChange,
+  const clearFilters = () => {
+    setGlobalFilter("");
+    setFilters({
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      estado: { value: null, matchMode: FilterMatchMode.IN },
+      calibre: { value: null, matchMode: FilterMatchMode.IN },
+      color: { value: null, matchMode: FilterMatchMode.IN },
+    });
+  };
 
-    state: {
-      isLoading: isLoading, //cell skeletons and loading overlay
-      showProgressBars: isLoading, //progress bars while refetching
-      isSaving: isLoading, //progress bars and save button spinners
-      rowSelection
-    },
-    muiTableHeadCellProps: {
-      sx: {
-        fontWeight: 800,
-        fontSize: "14px",
-        backgroundColor: "#74b9ff",
-      },
-    },
-    localization: {
-      clearSort: "Limpiar orden",
-      clearFilter: "Limpiar filtro",
-      filterByColumn: "Filtro",
-      sortByColumnDesc: "Ordenar por {column} descendente",
-      sortByColumnAsc: "Ordenar por {column} ascendente",
-      hideColumn: "Ocultar columna {column}",
-      hideAll: "Ocultar todo",
-      showAll: "Mostrar todo",
-      showAllColumns: "Mostrar todas las columnas",
-      showHideColumns: "Mostrar/ocultar columnas",
-      showHideSearch: "Mostrar/ocultar búsqueda",
-      showHideFilters: "Mostrar/ocultar filtros",
-      search: "Buscar",
-      toggleDensity: "Cambiar densidad",
-      toggleFullScreen: "Cambiar pantalla completa",
-      rowsPerPage: "Filas por página",
-      clearSelection: "Limpiar selección",
-      selectedCountOfRowCountRowsSelected: `{selectedCount} de {rowCount} filas seleccionadas -  peso: ${weight} kg`,
-    },
-  });
+  const mono = (value: string) => (
+    <span className="font-mono-tech text-xs font-medium tabular-nums text-steel-800">{value}</span>
+  );
+
+  const estadoBody = (row: Product) => (
+    <Tag value={row.estado} severity={estadoSeverity[row.estado] ?? "secondary"} rounded={false} />
+  );
+
+  const fechaBody = (row: Product) => {
+    if (!row.fechaIngreso) return <span className="text-steel-300">—</span>;
+    const date = new Date(row.fechaIngreso);
+    if (date.getFullYear() < 1971) return <span className="text-steel-300">—</span>;
+    return (
+      <span className="font-mono-tech text-xs tabular-nums text-steel-600">
+        {date.toLocaleDateString("es-CO")}
+      </span>
+    );
+  };
+
+  const obsBody = (row: Product) => (
+    <span className="block max-w-[220px] truncate text-steel-700" title={row.observaciones}>
+      {row.observaciones || "—"}
+    </span>
+  );
+
+  const sortHeader = (label: string) => (
+    <span className="inline-flex items-center gap-1.5">{label}</span>
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[320px] items-center justify-center rounded-sm border border-steel-200 bg-white">
+        <ProgressSpinner />
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <MaterialReactTable table={table} />
-    </div>
+    <section className="inventory-shell overflow-hidden rounded-sm border border-steel-200 bg-white shadow-sm">
+      <InventoryToolbar
+        totalRecords={products.length}
+        globalFilter={globalFilter}
+        filters={filters}
+        calibreOptions={calibreOptions}
+        colorOptions={colorOptions}
+        selectedCount={selectedProducts.length}
+        totalWeightKg={totalWeight}
+        onGlobalFilterChange={handleGlobalFilterChange}
+        onFiltersChange={setFilters}
+        onClearFilters={clearFilters}
+        onClearSelection={() => setSelectedProducts([])}
+      />
+
+      <div className="inventory-scroll">
+        <DataTable
+          value={products}
+          dataKey="id"
+          paginator
+          rows={15}
+          rowsPerPageOptions={[10, 15, 25, 50]}
+          paginatorClassName="inventory-paginator"
+          paginatorTemplate={inventoryPaginatorTemplate}
+          selectionMode="multiple"
+          selection={selectedProducts}
+          onSelectionChange={(e) => setSelectedProducts(e.value)}
+          filters={filters}
+          onFilter={(e) => setFilters(e.filters)}
+          globalFilterFields={["rollo", "calibre", "ral", "color", "importador", "observaciones"]}
+          emptyMessage="No hay rollos que coincidan con los filtros."
+          stripedRows
+          showGridlines
+          removableSort
+          sortMode="multiple"
+          size="small"
+          tableClassName="inventory-grid"
+        >
+          <Column
+            selectionMode="multiple"
+            headerStyle={{ width: "3rem", minWidth: "3rem" }}
+            bodyStyle={{ width: "3rem", minWidth: "3rem" }}
+            exportable={false}
+          />
+          <Column
+            field="rollo"
+            header={sortHeader("Rollo")}
+            sortable
+            style={{ minWidth: "7rem" }}
+            body={(row: Product) => mono(row.rollo)}
+          />
+          <Column
+            field="calibre"
+            header={sortHeader("Calibre")}
+            sortable
+            style={{ minWidth: "8rem" }}
+            body={(row: Product) => mono(row.calibre)}
+          />
+          <Column
+            field="ral"
+            header={sortHeader("RAL")}
+            sortable
+            style={{ minWidth: "4.5rem" }}
+            body={(row: Product) => mono(row.ral)}
+          />
+          <Column field="color" header={sortHeader("Color")} sortable style={{ minWidth: "6rem" }} />
+          <Column
+            field="pesoKg"
+            header={sortHeader("Peso kg")}
+            sortable
+            style={{ minWidth: "5.5rem" }}
+            body={(row: Product) => mono(String(row.pesoKg))}
+          />
+          <Column
+            field="fechaIngreso"
+            header={sortHeader("Ingreso")}
+            sortable
+            style={{ minWidth: "6.5rem" }}
+            body={fechaBody}
+          />
+          <Column
+            field="importador"
+            header={sortHeader("Importador")}
+            sortable
+            style={{ minWidth: "7rem" }}
+          />
+          <Column
+            field="observaciones"
+            header={sortHeader("Observaciones")}
+            sortable
+            style={{ minWidth: "11rem" }}
+            body={obsBody}
+          />
+          <Column
+            field="estado"
+            header={sortHeader("Estado")}
+            sortable
+            style={{ minWidth: "7rem" }}
+            body={estadoBody}
+          />
+        </DataTable>
+      </div>
+
+      <WeightCalculatorBar
+        selectedCount={selectedProducts.length}
+        totalWeightKg={totalWeight}
+        onClearSelection={() => setSelectedProducts([])}
+        className="rounded-none border-x-0 border-b-0 border-t border-accent-300"
+      />
+    </section>
   );
 };
 

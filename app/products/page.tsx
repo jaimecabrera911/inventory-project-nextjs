@@ -1,15 +1,20 @@
-"use client"
+"use client";
 
-import ProductTable from "@/components/ProductTable"
+import { PublicHeader } from "@/components/layout/PublicHeader";
+import ProductTable from "@/components/ProductTable";
 
-const ProductPage =  () => {
-
+const ProductPage = () => {
   return (
-    <div className="p-5 md:p-10 lg:p-20">
-      <h1 className="text-2xl font-bold mb-10">📦Inventario de Rollos</h1>
-      <ProductTable />
+    <div className="min-h-screen bg-steel-50">
+      <PublicHeader />
+      <div className="mx-auto max-w-[1600px] px-5 py-8 md:px-10 md:py-10">
+        <p className="mb-6 max-w-2xl text-sm text-steel-500">
+          Consulta en tiempo real el inventario de rollos. Selecciona filas para calcular el peso total.
+        </p>
+        <ProductTable />
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProductPage
+export default ProductPage;

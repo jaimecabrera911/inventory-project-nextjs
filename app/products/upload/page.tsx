@@ -1,119 +1,154 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { parse } from "csv-parse/browser/esm"; // Importa csv-parse
-import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
-import { Paper, Button } from "@mui/material"; // Importa CircularProgress para la carga
-import TableSkeleton from "@/components/TableSkeleton";
+import { useAppToast } from "@/components/providers/ToastProvider";
 import { Product } from "@/models/product.model";
 import { uploadProducts } from "@/services/product.service";
+import { parse } from "csv-parse/browser/esm";
+import { Button } from "primereact/button";
+import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
+import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
+import { useMemo, useState } from "react";
 
 const UploadFile = () => {
-  const [data, setData] = useState<object[]>([]);
-  const [loading, setLoading] = useState(true); // Estado de carga
+  const [data, setData] = useState<Record<string, string>[]>([]);
+  const [saving, setSaving] = useState(false);
+  const { showToast } = useAppToast();
 
-  useEffect(() => {
-    setLoading(false); // Detener la carga solo si está autenticado
-  }, []);
+  const handleUpload = (event: FileUploadHandlerEvent) => {
+    const file = event.files[0];
+    if (!file) return;
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const csvData = e.target?.result as string;
-        parse(
-          csvData,
-          {
-            columns: true,
-            trim: true,
-            delimiter: ";", // Especifica el delimitador aquí
-            cast: (value) => {
-              return value === "null" ? null : value;
-            },
-          },
-          (err, records) => {
-            if (err) {
-              console.error("Error parsing CSV:", err);
-            } else {
-              setData(records); // Actualizar el estado con los datos
-            }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const csvData = e.target?.result as string;
+      parse(
+        csvData,
+        {
+          columns: true,
+          trim: true,
+          delimiter: ";",
+          cast: (value) => (value === "null" ? null : value),
+        },
+        (err, records) => {
+          if (err) {
+            showToast({
+              severity: "error",
+              summary: "Error al leer CSV",
+              detail: "Verifica el formato del archivo.",
+              life: 5000,
+            });
+          } else {
+            setData(records as Record<string, string>[]);
+            showToast({
+              severity: "success",
+              summary: "Archivo cargado",
+              detail: `${records.length} filas listas para revisar.`,
+              life: 3000,
+            });
           }
-        );
-      };
-      reader.readAsText(file); // Leer el archivo como texto
-    }
+        }
+      );
+    };
+    reader.readAsText(file);
   };
 
-  const columns: MRT_ColumnDef<object>[] = React.useMemo(() => {
+  const columns = useMemo(() => {
     if (data.length === 0) return [];
     return Object.keys(data[0]).map((key) => ({
-      accessorKey: key,
-      header: key.charAt(0).toUpperCase() + key.slice(1), // Capitalizar el encabezado
+      field: key,
+      header: key.charAt(0).toUpperCase() + key.slice(1),
     }));
   }, [data]);
 
-  const handleSave = () => {
-    const products = data as Product[];
-
-    const formatProducts = products.map((product) => {
-      if (product.fechaIngreso == null || product.fechaIngreso === "") {
-        product.fechaIngreso = null;
-      } else {
-        product.fechaIngreso = new Date(product.fechaIngreso.toString());
-      }
-      product.pesoKg = parseFloat(product.pesoKg.toString());
-      return product;
-    });
-    console.log("Datos guardados:", formatProducts);
-
-
-    uploadProducts(formatProducts)
-      .then(() => {
-        alert("Datos guardados exitosamente.");
-      })
-      .catch((error) => {
-        alert("Error al guardar los datos: " + error);
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const products = data as unknown as Product[];
+      const formatProducts = products.map((product) => {
+        const formatted = { ...product };
+        if (formatted.fechaIngreso == null || formatted.fechaIngreso === "") {
+          formatted.fechaIngreso = null;
+        } else {
+          formatted.fechaIngreso = new Date(formatted.fechaIngreso.toString());
+        }
+        formatted.pesoKg = parseFloat(formatted.pesoKg.toString());
+        return formatted;
       });
-  };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <TableSkeleton />
-      </div>
-    );
-  }
+      await uploadProducts(formatProducts);
+      showToast({
+        severity: "success",
+        summary: "Inventario actualizado",
+        detail: `${formatProducts.length} rollos guardados correctamente.`,
+        life: 4000,
+      });
+      setData([]);
+    } catch (error) {
+      showToast({
+        severity: "error",
+        summary: "Error al guardar",
+        detail: String(error),
+        life: 5000,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Subir Archivo de Productos</h1>
-      <input
-        title="Subir Archivos"
-        type="file"
-        className="file-input w-full max-w-xs mt-10"
-        onChange={handleFileChange}
+      <div className="mb-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-600">
+          Carga
+        </p>
+        <h1 className="mt-1 text-2xl font-bold text-steel-900">Importar inventario CSV</h1>
+        <p className="mt-2 text-sm text-steel-500">
+          Sube un archivo delimitado por punto y coma. Al guardar, se reemplaza el inventario completo.
+        </p>
+      </div>
+
+      <FileUpload
+        mode="basic"
+        name="csv"
+        accept=".csv,text/csv"
+        maxFileSize={10000000}
+        customUpload
+        uploadHandler={handleUpload}
+        chooseLabel="Seleccionar CSV"
+        className="mb-8"
       />
+
       {data.length > 0 && (
-        <Paper className="mt-5 p-2">
-          <h2 className="text-xl font-semibold">Data:</h2>
-          <MaterialReactTable
-            columns={columns}
-            data={data}
-            initialState={{ showColumnFilters: true }}
-            enablePagination
-            enableSorting
-            enableColumnFilterModes={true}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSave}
-            className="mt-5"
+        <div className="overflow-hidden rounded-sm border border-steel-200 bg-white">
+          <div className="border-b border-steel-200 bg-steel-50 px-4 py-3">
+            <h2 className="text-sm font-semibold text-steel-800">
+              Vista previa — {data.length} filas
+            </h2>
+          </div>
+          <DataTable
+            value={data}
+            paginator
+            rows={10}
+            rowsPerPageOptions={[10, 25, 50]}
+            size="small"
+            scrollable
+            scrollHeight="400px"
           >
-            Guardar
-          </Button>
-        </Paper>
+            {columns.map((col) => (
+              <Column key={col.field} field={col.field} header={col.header} />
+            ))}
+          </DataTable>
+
+          <div className="flex justify-end border-t border-steel-200 bg-steel-50 px-4 py-4">
+            <Button
+              label="Guardar inventario"
+              icon="pi pi-save"
+              loading={saving}
+              onClick={handleSave}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
