@@ -10,7 +10,7 @@ export const checkboxPt: CheckboxPassThroughOptions = {
     className:
       "absolute left-0 top-0 m-0 h-4 w-4 cursor-pointer opacity-0",
   },
-  box: ({ context }) => ({
+  box: ({ context }: { context?: { checked?: boolean } }) => ({
     className: classNames(
       "pointer-events-none flex h-4 w-4 items-center justify-center rounded-[3px] border-2 transition-colors",
       {
